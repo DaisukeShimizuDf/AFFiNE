@@ -125,7 +125,7 @@ const LifetimeProFeature = {
     blobLimit: 100 * OneMB,
     storageQuota: 1024 * OneGB,
     historyPeriod: 30 * OneDay,
-    memberLimit: 10,
+    memberLimit: 30,
     copilotActionLimit: 10,
   },
 } as const;
