@@ -57,7 +57,11 @@ jobs:
 
       # 2) Backend server bundle — this is where the memberLimit change is compiled in.
       - name: Build @affine/server
-        run: yarn workspace @affine/server build
+        run: |
+          yarn workspace @affine/server build
+          echo "=== server dist after build ==="
+          ls -la packages/backend/server/dist
+          test -f packages/backend/server/dist/main.js
 
       # 3) Frontend assets (no R2/Sentry/Captcha secrets required; those only enable
       #    optional sourcemap upload / captcha and are safe to omit for self-host).
@@ -79,6 +83,15 @@ jobs:
 
       # 4) Production-only node_modules + Prisma client, then move them next to the
       #    server (mirrors the official build-images.yml packaging step).
+      #
+      #    The `yarn workspaces focus --production` reinstall can disturb the freshly
+      #    built server dist, so we stash it first and restore it right before the
+      #    docker build (the official pipeline places dist *after* this focus step too).
+      - name: Stash server dist
+        run: |
+          rm -rf /tmp/affine-server-dist
+          mv packages/backend/server/dist /tmp/affine-server-dist
+
       - name: Install production dependencies
         run: |
           yarn config set --json supportedArchitectures.cpu '["x64"]'
@@ -90,6 +103,14 @@ jobs:
 
       - name: Move node_modules into server package
         run: mv ./node_modules ./packages/backend/server
+
+      - name: Restore server dist
+        run: |
+          rm -rf packages/backend/server/dist
+          mv /tmp/affine-server-dist packages/backend/server/dist
+          echo "=== server dist before docker build ==="
+          ls -la packages/backend/server/dist
+          test -f packages/backend/server/dist/main.js
 
       # 5) Build & push the image using the official self-host Dockerfile.
       - name: Login to GitHub Container Registry
