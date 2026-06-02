@@ -51,11 +51,24 @@ jobs:
 
       # 1) Rust native module (amd64). The server bundle inlines this into dist,
       #    so it must exist and be named `server-native.x64.node` beforehand.
-      - name: Build server-native (x86_64)
-        uses: ./.github/actions/build-rust
+      #
+      #    NOTE: we intentionally do NOT use ./.github/actions/build-rust here. That
+      #    action restores a Swatinem/rust-cache keyed only by target+package (not by
+      #    runner OS), so object files compiled on ubuntu-latest (glibc 2.39, emits
+      #    __isoc23_* symbols) get reused on ubuntu-22.04 and poison the binary.
+      #    Building cache-free guarantees a clean compile against this runner's glibc 2.35.
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          target: x86_64-unknown-linux-gnu
-          package: '@affine/server-native'
+          toolchain: '1.96.0'
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Build server-native (x86_64, cache-free)
+        run: yarn workspace @affine/server-native build --target x86_64-unknown-linux-gnu
+        env:
+          CC: clang -D_BSD_SOURCE
+          TARGET_CC: clang -D_BSD_SOURCE
+          DEBUG: 'napi:*'
 
       # The server bundle statically resolves `require('./server-native.<arch>.node')`
       # for x64, arm64 AND armv7. We only build x64 (Railway is amd64), so satisfy the
@@ -71,8 +84,10 @@ jobs:
           ls -la server-native.*.node
           echo "=== glibc versions required by server-native.x64.node (must be <= 2.36 for bookworm) ==="
           objdump -T server-native.x64.node | grep -oE 'GLIBC_[0-9.]+' | sort -V -u | tail -n 5
-          if objdump -T server-native.x64.node | grep -qE 'GLIBC_2\.3[7-9]|GLIBC_2\.[4-9][0-9]'; then
-            echo "ERROR: native binary requires glibc newer than bookworm (2.36). Build must run on ubuntu-22.04." >&2
+          if objdump -T server-native.x64.node | grep -qE 'GLIBC_2\.3[7-9]|GLIBC_2\.[4-9][0-9]|__isoc23_'; then
+            echo "ERROR: native binary requires glibc/symbols newer than bookworm (2.36)." >&2
+            echo "Likely a poisoned rust cache or a build on ubuntu-latest. Offending symbols:" >&2
+            objdump -T server-native.x64.node | grep -E 'GLIBC_2\.3[7-9]|GLIBC_2\.[4-9][0-9]|__isoc23_' >&2 || true
             exit 1
           fi
 
