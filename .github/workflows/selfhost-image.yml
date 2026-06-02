@@ -5,9 +5,16 @@ name: Build Self-host Image
 #   ghcr.io/<owner>/affine:<image-tag>
 #
 # Railway runs on linux/amd64, so we only build that single platform to keep the
-# build fast. Trigger manually from the Actions tab (workflow_dispatch).
+# build fast. Runs automatically on pushes to canary that touch the backend (or
+# this workflow), and can also be triggered manually from the Actions tab.
 
 on:
+  push:
+    branches: [canary]
+    paths:
+      - 'packages/backend/**'
+      - '.github/workflows/selfhost-image.yml'
+      - '.github/actions/**'
   workflow_dispatch:
     inputs:
       app-version:
@@ -33,11 +40,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Compute lowercase image repo
+      - name: Compute image repo, tag and version
         id: repo
+        env:
+          INPUT_TAG: ${{ github.event.inputs.image-tag }}
+          INPUT_VERSION: ${{ github.event.inputs.app-version }}
         run: |
           echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/affine" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "tag=${INPUT_TAG:-selfhost}" >> "$GITHUB_OUTPUT"
+          echo "version=${INPUT_VERSION:-0.26.3}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
@@ -47,7 +59,7 @@ jobs:
       - name: Setup Version
         uses: ./.github/actions/setup-version
         with:
-          app-version: ${{ inputs.app-version }}
+          app-version: ${{ steps.repo.outputs.version }}
 
       # 1) Rust native module (amd64). The server bundle inlines this into dist,
       #    so it must exist and be named `server-native.x64.node` beforehand.
@@ -168,6 +180,6 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ steps.repo.outputs.image }}:${{ inputs.image-tag }}
-            ${{ steps.repo.outputs.image }}:${{ inputs.app-version }}
+            ${{ steps.repo.outputs.image }}:${{ steps.repo.outputs.tag }}
+            ${{ steps.repo.outputs.image }}:${{ steps.repo.outputs.version }}
             ${{ steps.repo.outputs.image }}:${{ steps.repo.outputs.sha }}
