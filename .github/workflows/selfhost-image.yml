@@ -35,7 +35,9 @@ jobs:
 
       - name: Compute lowercase image repo
         id: repo
-        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/affine" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/affine" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
@@ -67,6 +69,12 @@ jobs:
           cp server-native.x64.node server-native.arm64.node
           cp server-native.x64.node server-native.armv7.node
           ls -la server-native.*.node
+          echo "=== glibc versions required by server-native.x64.node (must be <= 2.36 for bookworm) ==="
+          objdump -T server-native.x64.node | grep -oE 'GLIBC_[0-9.]+' | sort -V -u | tail -n 5
+          if objdump -T server-native.x64.node | grep -qE 'GLIBC_2\.3[7-9]|GLIBC_2\.[4-9][0-9]'; then
+            echo "ERROR: native binary requires glibc newer than bookworm (2.36). Build must run on ubuntu-22.04." >&2
+            exit 1
+          fi
 
       # 2) Backend server bundle — this is where the memberLimit change is compiled in.
       - name: Build @affine/server
@@ -147,3 +155,4 @@ jobs:
           tags: |
             ${{ steps.repo.outputs.image }}:${{ inputs.image-tag }}
             ${{ steps.repo.outputs.image }}:${{ inputs.app-version }}
+            ${{ steps.repo.outputs.image }}:${{ steps.repo.outputs.sha }}
