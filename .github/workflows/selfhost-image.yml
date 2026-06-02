@@ -52,8 +52,18 @@ jobs:
           target: x86_64-unknown-linux-gnu
           package: '@affine/server-native'
 
-      - name: Rename native binary
-        run: mv ./packages/backend/native/server-native.node ./packages/backend/native/server-native.x64.node
+      # The server bundle statically resolves `require('./server-native.<arch>.node')`
+      # for x64, arm64 AND armv7. We only build x64 (Railway is amd64), so satisfy the
+      # bundler with placeholder copies for the arches we don't ship. These are never
+      # loaded at runtime on amd64, and docker-clean strips all non-amd64 .node files
+      # from the final image, so the placeholders never reach production.
+      - name: Prepare native binaries
+        run: |
+          cd packages/backend/native
+          mv server-native.node server-native.x64.node
+          cp server-native.x64.node server-native.arm64.node
+          cp server-native.x64.node server-native.armv7.node
+          ls -la server-native.*.node
 
       # 2) Backend server bundle — this is where the memberLimit change is compiled in.
       - name: Build @affine/server
