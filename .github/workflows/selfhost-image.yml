@@ -26,7 +26,10 @@ permissions:
 jobs:
   build-image:
     name: Build & push (linux/amd64)
-    runs-on: ubuntu-latest
+    # Build on ubuntu-22.04 (glibc 2.35) so the Rust native module stays compatible
+    # with the Debian bookworm runtime image (glibc 2.36). ubuntu-latest (24.04,
+    # glibc 2.39) produces a binary that requires GLIBC_2.38 and fails to dlopen.
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v6
 
