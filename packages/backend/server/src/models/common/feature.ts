@@ -113,7 +113,7 @@ const ProFeature = {
     blobLimit: 100 * OneMB,
     storageQuota: 100 * OneGB,
     historyPeriod: 30 * OneDay,
-    memberLimit: 10,
+    memberLimit: 30,
     copilotActionLimit: 10,
   },
 } as const;
