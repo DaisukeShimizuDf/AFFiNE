@@ -18,11 +18,11 @@ export default function LinkInvitationReviewDeclined(
   const { workspace } = props;
   return (
     <Template>
-      <Title>Request declined</Title>
+      <Title>参加リクエストが却下されました</Title>
       <Content>
         <P>
-          Your request to join <Workspace {...workspace} /> has been declined by
-          the workspace admin.
+          <Workspace {...workspace} />{' '}
+          への参加リクエストは、ワークスペース管理者によって却下されました。
         </P>
       </Content>
     </Template>

@@ -21,12 +21,13 @@ export default function InvitationAccepted(props: InvitationAcceptedProps) {
   const { user, workspace, url } = props;
   return (
     <Template>
-      <Title>{user.email} accepted your invitation</Title>
+      <Title>{user.email} さんが招待を承諾しました</Title>
       <Content>
         <P>
-          <User {...user} /> has joined <Workspace {...workspace} />
+          <User {...user} /> さんが <Workspace {...workspace} />{' '}
+          に参加しました
         </P>
-        <Button href={url}>Open Workspace Members</Button>
+        <Button href={url}>ワークスペースのメンバーを開く</Button>
       </Content>
     </Template>
   );

@@ -87,20 +87,20 @@ export const Renderers = {
   ),
   MemberAccepted: make(
     InvitationAccepted,
-    'Your workspace invitation was accepted'
+    'ワークスペースへの招待が承諾されました'
   ),
   MemberLeave: make(MemberLeave, 'A workspace member left'),
   LinkInvitationReviewRequest: make(
     LinkInvitationReviewRequest,
-    'New request to join a workspace'
+    'ワークスペースへの新しい参加リクエスト'
   ),
   LinkInvitationApprove: make(
     LinkInvitationApproved,
-    'Your request to join a workspace has been approved'
+    'ワークスペースへの参加リクエストが承認されました'
   ),
   LinkInvitationDecline: make(
     LinkInvitationReviewDeclined,
-    'Your request to join a workspace was declined'
+    'ワークスペースへの参加リクエストが却下されました'
   ),
   MemberRemoved: make(MemberRemoved, 'You have been removed from a workspace'),
   OwnershipTransferred: make(

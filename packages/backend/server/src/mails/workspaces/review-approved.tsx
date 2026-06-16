@@ -20,15 +20,14 @@ export default function LinkInvitationApproved(
   const { workspace, url } = props;
   return (
     <Template>
-      <Title>Welcome to the workspace!</Title>
+      <Title>ワークスペースへようこそ！</Title>
       <Content>
         <P>
-          Your request to join <Workspace {...workspace} /> has been accepted.
-          You can now access the team workspace and collaborate with other
-          members.
+          <Workspace {...workspace} />{' '}
+          への参加リクエストが承認されました。チームワークスペースにアクセスして、他のメンバーと共同作業ができます。
         </P>
       </Content>
-      <Button href={url}>Open Workspace</Button>
+      <Button href={url}>ワークスペースを開く</Button>
     </Template>
   );
 }
