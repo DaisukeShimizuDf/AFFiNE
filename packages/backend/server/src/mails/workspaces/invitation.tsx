@@ -22,13 +22,14 @@ export default function Invitation(props: InvitationProps) {
 
   return (
     <Template>
-      <Title>You are invited!</Title>
+      <Title>ワークスペースに招待されました</Title>
       <Content>
         <P>
-          <User {...user} /> invited you to join <Workspace {...workspace} />
+          <User {...user} /> さんが、あなたを <Workspace {...workspace} />{' '}
+          に招待しました
         </P>
-        <P>Click button to join this workspace</P>
-        <Button href={url}>Accept & Join</Button>
+        <P>下のボタンをクリックしてワークスペースに参加してください</P>
+        <Button href={url}>承諾して参加する</Button>
       </Content>
     </Template>
   );

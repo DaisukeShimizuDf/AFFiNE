@@ -83,7 +83,7 @@ export const Renderers = {
   //#region Workspace
   MemberInvitation: make(
     Invitation,
-    'You were invited to join a workspace on AFFiNE'
+    'AFFiNE のワークスペースに招待されました'
   ),
   MemberAccepted: make(
     InvitationAccepted,
